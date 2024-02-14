@@ -3,7 +3,7 @@ import pandas as pd
 from utils import get_coordinates
 
 
-os.chdir("..\extracts")
+os.chdir(r"../extracts")
 extracts_list=os.listdir()
 
 frame=[]
@@ -19,5 +19,5 @@ BlockFrame["coordinates"]=BlockFrame['BlockName'].apply(get_coordinates)
 
 blocks=[BlockFrame['BlockName']]
 final_Block_points=pd.DataFrame(BlockFrame.coordinates.tolist(),columns=['latitude','longitude'],index=blocks)
-os.chdir(r"..\archive")
+os.chdir(r"../archive")
 final_Block_points.to_csv(r"blocks_coordinates.csv",mode='a')
