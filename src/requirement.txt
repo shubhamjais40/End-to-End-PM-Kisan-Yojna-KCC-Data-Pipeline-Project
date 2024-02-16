@@ -1,0 +1,10 @@
+  474  pip3 --version
+  480  pip3 install -r requirements.txt
+  882  pip install pyspark
+  905  pip install fastavro
+  906  pip install geopy
+  915  pip install openpyxl
+  917  history|grep pip
+  918  history|grep pip|head -10
+  919  history|grep pip|tail -10
+  920  history|grep pip|tail -10|head -10 > requirement.txt
