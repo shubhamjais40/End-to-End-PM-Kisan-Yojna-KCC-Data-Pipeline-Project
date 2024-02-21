@@ -1,40 +1,58 @@
 import glob
-import pyspark.pandas as ps
-import pandas as pd
-from deep_translator import GoogleTranslator
-from pyspark.sql.types import StringType,IntegerType
-
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import transform,split,col,trim,upper,lower,udf
-from pyspark.sql.functions import to_date,to_timestamp,dayofmonth,month,hour
+import pyspark.pandas as pd
+from deep_translator import GoogleTranslator
+import pandas as ps
+from pyspark.sql.functions import trim,upper,lower,to_date,to_timestamp,transform,split,col
+from pyspark.sql.functions import dayofmonth,month,hour
+from pyspark.sql.types import StringType,IntegerType
+from pyspark.sql.functions import udf,col
+from pathlib import Path
 
+
+# creating spark session app
 spark=SparkSession\
            .builder\
-           .appName("SparkSQLExampleApp")\
+           .appName("SparkSQLTransformApp")\
            .getOrCreate()
+
 
 
 spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "false")
 spark.conf.set("spark.sql.execution.arrow.pyspark.selfDestruct.enabled", "true")
 
 
-filepath = "C:\\Users\\cvb\\Documents\\automation_python\\PM kisan call center query project\\project\\extracts"
-extract_list = glob.glob(filepath+"\\*.xlsx")
-#extract_list
+# defining path for extracts raw files and output staging lake
+
+EXTRACTSPATH = Path.cwd().parent/"EXTRACTS_RAW"/"*.xlsx"
+
+STAGINGPATH = Path.cwd().parent/"STAGING_LAKE"
+
+
+extract_list = glob.glob(str(EXTRACTSPATH))
+
+
+
+
+
 
 frame=pd.DataFrame([])
 #frame.info()
 
 for chunks in extract_list:
     df=ps.read_excel(chunks,index_col=None)
-    frame=frame.append(df)
+    frame=frame._append(df)
     print(f'{chunks} appended...')
+
+frame.drop_duplicates()
 
 kccFrame=spark.createDataFrame(frame)
 
 kccFrame1=kccFrame.withColumn("kcc",split(col("KccAns"),"\n",2).getItem(0))
 kccFrame1=kccFrame1.withColumn("Crops",split(col("Crop"),"\(",2).getItem(0))
-# kccFrame1.select("Crops","kcc").explain()
+
+
+columns_list = kccFrame1.columns
 
 # trim all spaces and converting all values to lowercase using loop over each column
 for key in columns_list:
@@ -64,8 +82,10 @@ def convertTextEng(kcc:str):
 convertToEng = udf(convertTextEng,StringType()) 
 
 
-kccFrame1 = kccFrame1.withColumn('kccEng',convertToEng('kcc'))
+#kccFrame1 = kccFrame1.withColumn('kccEng',convertToEng('kcc'))
 
 kccFrame1 = kccFrame1.drop("Season","KccAns","CreatedOn","createdDate")
 
-kccFrame1.write.partitionBy("createdMonth").mode("overwrite").parquet("kccRawAppended.parquet")
+kccFrame1.write.partitionBy("createdMonth").mode("overwrite").parquet(str(STAGINGPATH)+"/kcctest.parquet")
+
+print("Transformation completed successfully..")
