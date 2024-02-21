@@ -23,9 +23,11 @@ schema = {'doc': 'calender records',
         {'name': 'day', 'type': 'int'},
         {'name': 'weekday', 'type': 'int'},
         {'name': 'month', 'type': 'int'},
+        {'name': 'year', 'type': 'int'},
         {'name': 'quarter', 'type': 'int'},
         {'name': 'weekName', 'type': 'string'},
         {'name': 'MonthName', 'type': 'string'}
+
     ]
 }
     
