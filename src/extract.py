@@ -1,10 +1,9 @@
 import requests
 import pandas as pd
-import os
 from pathlib import Path
 
 class PMKisan_Extracts:
-    def __init__(self,output_dir='EXTRACTS_RAW'):
+    def __init__(self,output_dir='TESTDIR'):
         self.HEADERS = {'User-Agent': 'ReqBin Python Client/1.0'}
         self.URL = "https://dackkms.gov.in/Account/API/kKMS_QueryData.aspx?StateCD=01&DistrictCd=0104"
         self.OUTPUTPATH = Path.cwd().parent.joinpath(output_dir)

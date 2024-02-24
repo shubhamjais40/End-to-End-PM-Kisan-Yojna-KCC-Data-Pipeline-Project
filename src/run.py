@@ -27,33 +27,34 @@ else:
 
 
 # Conditional Run for input reuqirements
+def main():
 
-if EXTRACTS_TYPE == 'MONTHLY':
-    print("Monthly Extracts will run")
-    MONTH = args.month
-    YEAR = args.year
-    OUTDIR = args.outputdir.upper()
-    print(f"Pulling DataSet for params {MONTH},{YEAR},{OUTDIR} job..")
-    monObj = PMKisan_Extracts(OUTDIR)
-    monObj.kisan_monthly_extracts(MONTH,YEAR)
-    print(f"Successfully ingested Extracts for {YEAR}-{MONTH} in {OUTDIR}!!")
+    if EXTRACTS_TYPE == 'MONTHLY':
+        print("Monthly Extracts will run")
+        MONTH = args.month
+        YEAR = args.year
+        OUTDIR = args.outputdir.upper()
+        print(f"Pulling DataSet for params {MONTH},{YEAR},{OUTDIR} job..")
+        monObj = PMKisan_Extracts(OUTDIR)
+        print(monObj.OUTPUTPATH)
+        monObj.kisan_monthly_extracts(MONTH,YEAR)
+        print(f"Successfully ingested Extracts for {YEAR}-{MONTH} in {OUTDIR}!!")
 
-if EXTRACTS_TYPE == 'ADHOC':
-    print("Adhoc Extracts will run")
-    ST_MONTH=args.startmonth
-    EN_MONTH = args.endmonth
-    YEAR_ADHOC = args.year
-    OUTDIR = args.outputdir.upper()
-    print(f"{ST_MONTH},{EN_MONTH},{YEAR_ADHOC},{OUTDIR}")
-    adhocobj=PMKisan_Extracts(OUTDIR)
-    print(adhocobj.OUTPUTPATH)
-    adhocobj.kisan_backlog_extracts(ST_MONTH,EN_MONTH,YEAR_ADHOC)
-    print(f"Successfully ingested ADHOC Extracts for Year:{YEAR_ADHOC}-Month:{ST_MONTH} to Month:{EN_MONTH} in {OUTDIR}!!")
+    if EXTRACTS_TYPE == 'ADHOC':
+        print("Adhoc Extracts will run")
+        ST_MONTH=args.startmonth
+        EN_MONTH = args.endmonth
+        YEAR_ADHOC = args.year
+        OUTDIR = args.outputdir.upper()
+        print(f"{ST_MONTH},{EN_MONTH},{YEAR_ADHOC},{OUTDIR}")
+        adhocobj=PMKisan_Extracts(OUTDIR)
+        print(adhocobj.OUTPUTPATH)
+        adhocobj.kisan_backlog_extracts(ST_MONTH,EN_MONTH,YEAR_ADHOC)
+        print(f"Successfully ingested ADHOC Extracts for Year:{YEAR_ADHOC}-Month:{ST_MONTH} to Month:{EN_MONTH} in {OUTDIR}!!")
 
-#ke=PMKisan_Extracts("EXTRACTS_RAW")
+    return None
 
-# #ke.kisan_backlog_extracts(6,12,2023)
-# print(ke.test_api_conn(1,2023))
-# ke.kisan_monthly_extracts(1,2024)
-# #ke.save_tableToXlsFile(df,)
+    
+if __name__ == "__main__":
+    main()
 
