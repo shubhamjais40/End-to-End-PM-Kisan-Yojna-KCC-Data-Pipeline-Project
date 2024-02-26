@@ -57,7 +57,7 @@ print(kccDF.printSchema())
 
 
 #Checking kccDF if any timestamp is null ,Block if null ,if  Crop, QueryText is null,
-null_count = kccDF.where(kccDF.createdTime.isNull() | kccDF.BlockName.isNull() | kccDF.Crops.isNull() | kccDF.QueryText.isNull()).count()
+null_count = kccDF.where(kccDF.createdTime.isNull() | kccDF.BlockName.isNull() | kccDF.Crops.isNull()).count()
 
 if null_count == 0:
     log.debug("No Null Values in either Data Entities")
@@ -80,9 +80,6 @@ blockDFValid = blockDF_unique.where('blocks !="BlockName"')
 #blockDF.printSchema()
 
 #blockDFValid.count()
-
-
-
 
 #check if any block name is null
 #blockDFValid.where(blockDFValid.blocks.isNull()).collect()
@@ -128,7 +125,7 @@ log.info(kccMergedDF.show(5))
 
 log.debug("Writing dataframe to parquet file..")
 
-kccMergedDF.write.partitionBy('year','MonthName').mode('errorifexists').parquet(str(OUTPUT)+'/kccFinalDF')
+kccMergedDF.write.partitionBy('year','MonthName').mode('errorifexists').parquet(str(OUTPUT))
 
 log.info("DownStream ready to export file saved successfully..")
 

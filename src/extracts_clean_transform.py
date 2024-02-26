@@ -21,32 +21,32 @@ spark=SparkSession\
 spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "false")
 spark.conf.set("spark.sql.execution.arrow.pyspark.selfDestruct.enabled", "true")
 
-
-# defining path for extracts raw files and output staging lake
-
-EXTRACTSPATH = Path.cwd().parent/"EXTRACTS_RAW"/"*.xlsx"
+EXTRACTSPATH = Path.cwd().parent/"EXTRACTS_RAW/"
 
 STAGINGPATH = Path.cwd().parent/"STAGING_LAKE"
 
+kccFrame = spark.read.format("excel").option("header","true").load(str(EXTRACTSPATH))
+# defining path for extracts raw files and output staging lake
 
-extract_list = glob.glob(str(EXTRACTSPATH))
+#EXTRACTSPATH = Path.cwd().parent/"EXTRACTS_RAW"/"*.xlsx"
+
+STAGINGPATH = Path.cwd().parent/"STAGING_LAKE"
+
+# extract_list = glob.glob(str(EXTRACTSPATH))
 
 
 
+# frame=pd.DataFrame([])
+# #frame.info()
 
+# for chunks in extract_list:
+#     df=ps.read_excel(chunks,index_col=None)
+#     frame=frame._append(df)
+#     print(f'{chunks} appended...')
 
+# frame.drop_duplicates()
 
-frame=pd.DataFrame([])
-#frame.info()
-
-for chunks in extract_list:
-    df=ps.read_excel(chunks,index_col=None)
-    frame=frame._append(df)
-    print(f'{chunks} appended...')
-
-frame.drop_duplicates()
-
-kccFrame=spark.createDataFrame(frame)
+# kccFrame=spark.createDataFrame(frame)
 
 kccFrame1=kccFrame.withColumn("kcc",split(col("KccAns"),"\n",2).getItem(0))
 kccFrame1=kccFrame1.withColumn("Crops",split(col("Crop"),"\(",2).getItem(0))
@@ -84,7 +84,7 @@ convertToEng = udf(convertTextEng,StringType())
 
 #kccFrame1 = kccFrame1.withColumn('kccEng',convertToEng('kcc'))
 
-kccFrame1 = kccFrame1.drop("Season","KccAns","CreatedOn","createdDate")
+kccFrame1 = kccFrame1.drop("Season","KccAns","CreatedOn","createdDate","Crop")
 
 kccFrame1.write.partitionBy("createdMonth").mode("overwrite").parquet(str(STAGINGPATH)+"/kcctest.parquet")
 

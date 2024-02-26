@@ -35,7 +35,7 @@ calender_rec_dict = calenderGenerater(start_date,end_date,freq)
 
 from_date = start_date.replace('/','')
 to_date = end_date.replace('/','')
-avro_writer(schema, calender_rec_dict, f'../archive/calender_range_{from_date}_{to_date}.avro')
+avro_writer(schema, calender_rec_dict, f'../ARCHIVE/calender_range_{from_date}_{to_date}.avro')
 print(f"Calender generated for date range {from_date} - {to_date} freq {freq}")
     
 
