@@ -1,11 +1,9 @@
 from pyspark.sql import SparkSession
-#import pyspark.pandas as pd
-#import pandas as ps
-from pyspark.sql.functions import trim,upper,lower,to_date,to_timestamp,transform,split,col,substring
+from pyspark.sql.functions import lower,split,col,substring
 from pyspark.sql.functions import dayofmonth,month,hour
 from pyspark.sql.types import StringType,IntegerType
 from pyspark.sql.functions import sum,avg,max,count
-from pyspark.sql.functions import udf,col
+from pyspark_assert import assert_frame_equal
 from fastavro import reader
 from pathlib import Path
 import logging
@@ -13,13 +11,6 @@ import logging
 
 log = logging.getLogger('test')
 log.setLevel(logging.DEBUG)
-
-def avro_reader(filename):
-    with open(filename, 'rb') as fo:
-        avro_reader = reader(fo)
-        records = [r for r in avro_reader]
-        return records
-
 
 sc=SparkSession\
            .builder\
@@ -30,16 +21,16 @@ sc=SparkSession\
 
 # Input Source &  output file definition
 
-FILE_TO_TRANSFORM = "kcc.parquet"
+FILE_TO_TRANSFORM = "kcctest.parquet"
 
 STAGING_PATH = Path.cwd().parent.joinpath("STAGING_LAKE",FILE_TO_TRANSFORM)
 #print(STAGING_PATH)
 
-OUTPUT = Path.cwd().parent.joinpath("DOWNSTREAM_READY_EXTRACTS")
+OUTPUT = Path.cwd().parent.joinpath("DOWNSTREAM_READY_EXTRACTS/")
 
 PATH_TO_BLOCKS_DF = Path.cwd().parent.joinpath('ARCHIVE','blocks_coordinates.csv')
 
-PATH_TO_CALENDER = Path.cwd().parent.joinpath('ARCHIVE','calender_range_20230601_20231231.avro')
+PATH_TO_CALENDER = Path.cwd().parent.joinpath('ARCHIVE','calender_range_20230101_20231231.avro')
 
 
 if STAGING_PATH.exists():
@@ -50,7 +41,7 @@ else:
 
 #Reading kcc Data from source
 
-kccDF = sc.read.parquet(str(STAGING_PATH)).select('Sector','Category','Crops','QueryType','StateName','DistrictName','BlockName','QueryText','kccEng','createdTime','convertedDate','createdHour')
+kccDF = sc.read.parquet(str(STAGING_PATH),mode="DROPMALFORMED").select('Sector','Category','Crops','QueryType','StateName','DistrictName','BlockName','QueryText','createdTime','convertedDate','createdHour','kccEng')
 print(kccDF.printSchema())
 
 
@@ -83,7 +74,6 @@ blockDFValid = blockDF_unique.where('blocks !="BlockName"')
 
 #check if any block name is null
 #blockDFValid.where(blockDFValid.blocks.isNull()).collect()
-from pyspark_assert import assert_frame_equal
 
 try:
     assert_frame_equal(blockDF, blockDFValid)
@@ -98,9 +88,10 @@ finally:
 log.debug("Reading Calender Data from Archive")
 
 try:
-    calender_dic = avro_reader(str(PATH_TO_CALENDER))
-    calenderDF = sc.createDataFrame(calender_dic).drop_duplicates(['date'])
-    calenderDF.printSchema()
+    # calender_dic = avro_reader(str(PATH_TO_CALENDER))
+    # calenderDF = sc.createDataFrame(calender_dic).drop_duplicates(['date'])
+    calenderDF = sc.read.format("avro").option("inferSchema","true").load(str(PATH_TO_CALENDER)).drop_duplicates(['date'])
+    log.debug(calenderDF.printSchema())
     log.debug(calenderDF.count())
 except Exception as e:
     log.error(e)
@@ -117,7 +108,7 @@ mergedKccDF = kccDF.join(blockDFValid,kccDF.BlockName ==  lower(blockDFValid.blo
 #mergedKccDF.printSchema()
 log.debug("Selecting relevant columns from merged dataframe")
 
-kccMergedDF = mergedKccDF.select('Sector','Category','Crops','QueryType','QueryText','kccEng','StateName','DistrictName','blocks','latitude','longitude','convertedDate','day','month','MonthName','quarter','weekName','weekDay','year')
+kccMergedDF = mergedKccDF.select('Sector','Category','Crops','QueryType','QueryText','StateName','DistrictName','blocks','latitude','longitude','convertedDate','day','month','MonthName','quarter','weekName','weekDay','year','kccEng')
 
 print(kccMergedDF.printSchema())
 
@@ -125,7 +116,7 @@ log.info(kccMergedDF.show(5))
 
 log.debug("Writing dataframe to parquet file..")
 
-kccMergedDF.write.partitionBy('year','MonthName').mode('errorifexists').parquet(str(OUTPUT))
+kccMergedDF.write.partitionBy('year','MonthName').mode('overwrite').parquet(str(OUTPUT))
 
 log.info("DownStream ready to export file saved successfully..")
 

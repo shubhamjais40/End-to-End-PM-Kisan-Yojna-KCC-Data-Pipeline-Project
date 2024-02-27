@@ -82,7 +82,7 @@ def convertTextEng(kcc:str):
 convertToEng = udf(convertTextEng,StringType()) 
 
 
-#kccFrame1 = kccFrame1.withColumn('kccEng',convertToEng('kcc'))
+kccFrame1 = kccFrame1.withColumn('kccEng',convertToEng('kcc'))
 
 kccFrame1 = kccFrame1.drop("Season","KccAns","CreatedOn","createdDate","Crop")
 

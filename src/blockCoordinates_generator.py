@@ -14,6 +14,7 @@ BlockFrame=pd.concat(frame)
 BlockFrame=BlockFrame.drop_duplicates(ignore_index=True)
 BlockFrame['BlockName']=BlockFrame['BlockName'].str.strip()
 BlockFrame=BlockFrame[BlockFrame['BlockName']!='0']
+print(BlockFrame.BlockName.count())
 
 BlockFrame["coordinates"]=BlockFrame['BlockName'].apply(get_coordinates)
 

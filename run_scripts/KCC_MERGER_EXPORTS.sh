@@ -2,11 +2,7 @@
 
 start=$(date +%s)
 
-cd ../src/
-
-echo `pwd`
-
-spark-submit kccMerged.py
+spark-submit --packages org.apache.spark:spark-avro_2.12:3.5.0 ../src/kccMerged.py
 
 end=$(date +%s)
 

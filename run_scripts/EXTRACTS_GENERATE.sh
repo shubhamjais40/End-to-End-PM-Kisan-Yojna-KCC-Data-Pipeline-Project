@@ -33,3 +33,4 @@ else
 fi
 
 
+# Sample for adhoc-> sh EXTRACTS_GENERATE.sh -t adhoc -y 2023 -s 1 -e 12 -o TESTDIR
